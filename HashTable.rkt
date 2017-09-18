@@ -133,6 +133,25 @@
                    (cons (car lst)
                          (remove-element key val (cdr lst) val?))))])))
 
+(define add!
+  (lambda (hash-table key value)
+    (let* ([vec (vector-ref hash-table 1)]
+           [vec_size (vector-length (vector-ref hash-table 1))]
+           [idx (modulo (hash key) vec_size)]
+           [bucket (vector-ref vec idx)])
+      ; TODO: rehash if more than 50%
+      ; assoc checks if key is the car of some pair in the list
+      (if (assoc key bucket)
+          (raise-arguments-error 'add!
+                                 "Can not add a value if the key is already in the hash table."
+                                 "key" key
+                                 "value" value)
+          ;Add pair to front of list
+          (vector-set! vec idx (cons (cons key value) bucket)))
+      ; Increment size
+      (vector-set! hash-table 0 (+ vec_size 1)))))
+
+
 ;;; Procedure:
 ;;;   update
 ;;; Parameters:
