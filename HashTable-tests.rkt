@@ -40,7 +40,13 @@
     "Cannot add an exisiting element"
     (let ([ht (hash-table-new)])
       (add! ht "a" 'val)
-      (check-exn exn:fail? (lambda () (add! ht "a" 'lav)))))))
+      (check-exn exn:fail? (lambda () (add! ht "a" 'lav)))))
+   (test-case
+    "Add enough elements to rehash the table"
+    (let* ([ht (hash-table-new)]
+           [vec-size (vector-ref ht 1)]
+           )
+   ))))
 
 
 ; Run tests

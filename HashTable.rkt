@@ -6,8 +6,8 @@
 ;hash table (vector) contains lists
 ;lists contain pairs
 
-;GLOBAL VALUES
-;(define ALPHA 52) ;capital and lowercase letters
+;GLOBAL Constants
+(define ALPHA 128) ;capital and lowercase letters
 ;(define PERCENT-FULL .5) ;grow and rehash at 50% capacity
 
 ;;; Procedure:
@@ -20,8 +20,8 @@
 ;;;   hash, an integer
 ;;; Pre-conditions:
 ;;;   key contains characters from the ASCII table (valued 0 to 127)
+;;;   ALPHA is defined
 (define hash
-  (let ([ALPHA 128])
     (lambda (key)
       (let kernel ([i 0]
                    [sum 0])
@@ -30,7 +30,7 @@
             (kernel (+ i 1) ;increment character being examined in key
                     (+ sum (* (expt ALPHA
                                     (- (string-length key) (+ i 1)))
-                              (char->integer (string-ref key i)))))))))) ;convert character in key at index i to ASCII value
+                              (char->integer (string-ref key i))))))))) ;convert character in key at index i to ASCII value
 
 ;;; Procedure:
 ;;;   hash-table-new
@@ -126,7 +126,7 @@
 ;;; Pre-conditions:
 ;;;   new-table is an empty vector
 ;;;   index should initally be 0
-(define rehash-table
+(define rehash-table!
   (lambda (old-table new-table index)
     (if (equal? index (vector-length old-table))
         new-table
