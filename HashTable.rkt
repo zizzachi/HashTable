@@ -59,7 +59,7 @@
 ;;; Procedure:
 ;;;   expand?
 ;;; Parameters:
-;;;   vec, a vector containing <number of elements in hash table, size of hash 
+;;;   vec, a vector containing <number of elements in hash table, size of hash
 ;;;           table (length of vector), a vector representing a hash table>
 ;;; Purpose:
 ;;;   Determines if hash table needs to be expaned based on max capacity (e.g. 50%)
@@ -116,10 +116,11 @@
                          (remove-element key val (cdr lst) val?))))])))
 
 (define add!
-  (lambda (vec key val)
-    (let* ([table (vector-ref vec 2)]
-           [num-pairs (vector-ref vec 0)]
-           [index (modulo (hash key) num-pairs)]
+  (lambda (ht key val)
+    (let* ([table (vector-ref ht 2)]
+    [table-size (vector-ref ht 1)]
+           [num-pairs (vector-ref ht 0)]
+           [index (modulo (hash key) table-size)]
            [lst (vector-ref table index)])
       ; TODO: rehash if more than 50%
       ; assoc checks if key is the car of some pair in the list
@@ -131,7 +132,7 @@
           ;Add pair to front of list
           (vector-set! table index (cons (cons key val) lst)))
       ; Increment size
-      (vector-set! vec 0 (+ num-pairs 1)))))
+      (vector-set! ht 0 (+ num-pairs 1)))))
 
 
 ;;; Procedure:
@@ -139,7 +140,7 @@
 ;;; Parameters:
 ;;;   key, a string
 ;;;   val, any type
-;;;   vec, a vector containing <number of elements in hash table, size of hash 
+;;;   vec, a vector containing <number of elements in hash table, size of hash
 ;;;        table (length of vector), a vector representing a hash table>
 ;;; Purpose:
 ;;;   Updates existing (key.val') pair in hash table with specified (key.val)
