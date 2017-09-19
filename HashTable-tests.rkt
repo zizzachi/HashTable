@@ -31,11 +31,16 @@
   (test-suite
    "Tests of add!"
    (test-case
+    "Can add multiple distinct keys"
+    (let ([ht (hash-table-new)])
+      (add! ht "the answer" 42)
+      (add! ht "pair" (cons 'a 'b))
+      (add! ht "meta" (hash-table-new))))
+   (test-case
     "Cannot add an exisiting element"
     (let ([ht (hash-table-new)])
-      (add! ht "a" 42)
-      ;(check-error (add! ht "a" 'lav))
-   ))))
+      (add! ht "a" 'val)
+      (check-exn exn:fail? (lambda () (add! ht "a" 'lav)))))))
 
 
 ; Run tests
