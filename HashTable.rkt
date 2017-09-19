@@ -10,7 +10,7 @@
 ;(define ALPHA 52) ;capital and lowercase letters
 ;(define PERCENT-FULL .5) ;grow and rehash at 50% capacity
 
-;PRACTICE EXAMPLE STRUCTURES 
+;PRACTICE EXAMPLE STRUCTURES
 (define ex-lst (list (cons "one" 11)
                      (cons "two" 12)
                      (cons "three" 13)))
@@ -23,6 +23,16 @@
 (vector-set! ex-vec 1 (vector-length (vector-ref ex-vec 2))) ;store length of vector stored at index 2
 (vector-set! (vector-ref ex-vec 2) 0 ex-lst)
 (vector-set! (vector-ref ex-vec 2) 3 l)
+
+;;; Procedure:
+;;;   hash-table-new
+;;; Purpose:
+;;;   Create a new hash-table.
+;;; Produces:
+;;;   hash-table, a hash-table
+(define hash-table-new
+  (lambda ()
+    (vector 0 31 (make-vector 31 (list)))))
 
 ;;; Procedure:
 ;;;   hash
@@ -42,8 +52,8 @@
         (if (= i (string-length key))
             sum ;make sure index returned is within bounds of vector
             (kernel (+ i 1) ;increment character being examined in key
-                    (+ sum (* (expt ALPHA 
-                                    (- (string-length key) (+ i 1))) 
+                    (+ sum (* (expt ALPHA
+                                    (- (string-length key) (+ i 1)))
                               (char->integer (string-ref key i)))))))))) ;convert character in key at index i to ASCII value
 
 ;;; Procedure:
@@ -76,10 +86,10 @@
 ;;; Purpose:
 ;;;   Removed a specified (key.val) pair, if possible
 ;;; Produces:
-;;;   A list with the specified element removed or an error if the key (and maybe value, 
+;;;   A list with the specified element removed or an error if the key (and maybe value,
 ;;;   if val? is #t) is not found
 ;;; Pre-conditions:
-;;;   If val of (key.val) needs to be considered to determine if a (key.val) pair has 
+;;;   If val of (key.val) needs to be considered to determine if a (key.val) pair has
 ;;;   been found within lst, val? should be #t
 (define remove-element
   (lambda (key val lst val?)
@@ -88,7 +98,7 @@
                                   "(key.value) pair was not found within list"
                                   "key" key
                                   "value" val)]
-          [(if val? 
+          [(if val?
                ;if we care about val, make sure both key and val match
                (if (and (equal? (car (car lst)) key) (= (cdr (car lst)) val))
                    ;if they match, return remainder of list
@@ -96,9 +106,9 @@
                    ;build a list of non-matching elements
                    (cons (car lst)
                          (remove-element key val (cdr lst) val?)))
-               
+
                ;if we don't care about val, only make sure val matches
-               (if (equal? (car (car lst)) key) 
+               (if (equal? (car (car lst)) key)
                    ;if it matches, return remainder of list
                    (cdr lst)
                    ;build a list of non-matching elements
@@ -161,7 +171,7 @@
 ;;; Parameters:
 ;;;   key, a string
 ;;;   val, any type
-;;;   vector, a vector containing <number of elements in hash table, size of hash 
+;;;   vector, a vector containing <number of elements in hash table, size of hash
 ;;;           table (length of vector), a vector representing a hash table>
 ;;; Purpose:
 ;;;   Removes (key.val) pair in hash table or returns error if (key.val) pair is not found
@@ -239,7 +249,7 @@
   (lambda (lst table)
     (if (null? lst)
         table
-        (begin 
+        (begin
           (add-to-table (car (car lst))
                         (cdr (car lst))
                         table)
@@ -270,7 +280,7 @@
           (read-table old-table
                       new-table
                       (+ 1 index))))))
-    
+
 ;;; Procedure:
 ;;;   rehash
 ;;; Parameters:
@@ -290,3 +300,8 @@
       (vector-set! vec
                    2
                    (read-table old-table new-table 0)))))
+
+(provide
+  hash-table-new
+    hash
+         add!)
