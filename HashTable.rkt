@@ -54,25 +54,24 @@
 ;;;   hash
 ;;; Parameters:
 ;;;   key, a string
-;;;   i, a positive integer
-;;;   sum, a positive integer
 ;;; Purpose:
 ;;;   Hashes the given key (string) to a unique index within the vector
 ;;; Produces:
 ;;;   The index of vector at which key will be stored
 ;;; Pre-conditions:
-;;;   i = sum = 0 when hash-function is called
 ;;;   key contains characters from ASCII table (valued 0 to 127)
 (define hash
-  (lambda (key)
-    (let kernel ([i 0]
-                 [sum 0])
-      (if (= i (string-length key))
-          sum ;make sure index returned is within bounds of vector
-          (kernel (+ i 1) ;increment character being examined in key
-                  (+ sum (* (expt ALPHA 
-                                  (- (string-length key) (+ i 1))) 
-                            (char->integer (string-ref key i))))))))) ;convert character in key at index i to ASCII value
+  (let ([ALPHA 52] ;capital and lowercase letters
+        [PERCENT-FULL .5]) ;grow and rehash at 50% capacity
+    (lambda (key)
+      (let kernel ([i 0]
+                   [sum 0])
+        (if (= i (string-length key))
+            sum ;make sure index returned is within bounds of vector
+            (kernel (+ i 1) ;increment character being examined in key
+                    (+ sum (* (expt ALPHA 
+                                    (- (string-length key) (+ i 1))) 
+                              (char->integer (string-ref key i)))))))))) ;convert character in key at index i to ASCII value
 
 ;;; Procedure:
 ;;;   expand?
