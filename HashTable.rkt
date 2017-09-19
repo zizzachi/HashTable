@@ -298,7 +298,7 @@
 ;;; Purpose:
 ;;;   Finds the value associated with a given key
 ;;; Produces:
-;;;   The value associated with a given key, or null if a pair is not found
+;;;   The value associated with a given key, or #f if a pair is not found
 ;;; Pre-conditions:
 ;;;   [No additional]
 (define find
@@ -308,7 +308,7 @@
            [pair (assoc key (vector-ref table index))])
       (if pair
           (cdr pair)
-          null))))
+          #f))))
 
 ; Export procedures for unit tests
 (provide
