@@ -45,8 +45,14 @@
     "Add enough elements to rehash the table"
     (let* ([ht (hash-table-new)]
            [vec-size (vector-ref ht 1)]
-           )
-   ))))
+           [rehash-size (* PERCENT-FULL vec-size)])
+      (let kernel ([index 0])
+        (unless (> index rehash-size)
+            (add! ht (number->string index) index))
+        (kernel (+ index 1)))
+      ; GET FROM HASH TABLE
+      (check-equal? (number->string rehash-size) rehash-size)))
+   ))
 
 
 ; Run tests

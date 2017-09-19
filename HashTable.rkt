@@ -8,7 +8,7 @@
 
 ;GLOBAL Constants
 (define ALPHA 128) ;capital and lowercase letters
-;(define PERCENT-FULL .5) ;grow and rehash at 50% capacity
+(define PERCENT-FULL .5) ;grow and rehash at 50% capacity
 
 ;;; Procedure:
 ;;;   hash
@@ -57,13 +57,12 @@
 ;;; Pre-conditions:
 ;;;   PERCENT-FULL is defined
 (define expand?
-  (lambda (ht)
-    (let ([PERCENT-FULL .5]) ;grow and rehash at 50% capacity)
+  (lambda (ht) ;grow and rehash at 50% capacity)
       (if (>= (exact->inexact (/ (vector-ref ht 0)
                                  (vector-ref ht 1)))
               PERCENT-FULL)
           #t
-          #f))))
+          #f)))
 
 ;;; Procedure:
 ;;;   add-to-table!
@@ -313,6 +312,7 @@
 
 ; Export procedures for unit tests
 (provide
+ PERCENT-FULL
  hash
  hash-table-new
  add!
