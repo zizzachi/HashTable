@@ -239,8 +239,8 @@
 ;;;   hash-vec has required fields filled with valid input
 (define find
   (lambda (str hash-vec)
-    (let* ([index (modulo (hash str) (vector-length table))]
-           [table (vector-ref hash-vec 2)]
+    (let* ([table (vector-ref hash-vec 2)]
+           [index (modulo (hash str) (vector-length table))]
            [pair (assoc str (vector-ref table index))])
       (if (equal? pair #f)
           null
@@ -305,7 +305,7 @@
 ;;;   hash-vec has required fields filled with valid input
 (define rehash
   (lambda (hash-vec)
-    (let ([old-table (vector-ref hash-vec 2)]
+    (let* ([old-table (vector-ref hash-vec 2)]
           [size (vector-ref hash-vec 1)]
           [new-table (make-vector (* size 2) null)])
       (vector-set! hash-vec
