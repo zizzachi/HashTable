@@ -51,12 +51,11 @@
 (vector-set! (vector-ref ex-vec 2) 3 l)
 
 ;;; Procedure:
-;;;   hash-function
+;;;   hash
 ;;; Parameters:
 ;;;   key, a string
 ;;;   i, a positive integer
 ;;;   sum, a positive integer
-;;;   vector, a vector of lists containing pairs
 ;;; Purpose:
 ;;;   Hashes the given key (string) to a unique index within the vector
 ;;; Produces:
@@ -64,16 +63,16 @@
 ;;; Pre-conditions:
 ;;;   i = sum = 0 when hash-function is called
 ;;;   key contains characters from ASCII table (valued 0 to 127)
-(define hash-function
-  (lambda (key i sum vector) ;i and sum are initially 0
-    (if (= i (string-length key))
-        (modulo sum (vector-length vector)) ;make sure index returned is within bounds of vector
-        (hash-function key
-                       (+ i 1) ;increment character being examined in key
-                       (+ sum (* (expt alpha 
-                                       (- (string-length key) (+ i 1))) 
-                                 (char->integer (string-ref key i)))) ;convert character in key at index i to ASCII value
-                       vector))))
+(define hash
+  (lambda (key)
+    (let kernel ([i 0]
+                 [sum 0])
+      (if (= i (string-length key))
+          sum ;make sure index returned is within bounds of vector
+          (kernel (+ i 1) ;increment character being examined in key
+                  (+ sum (* (expt ALPHA 
+                                  (- (string-length key) (+ i 1))) 
+                            (char->integer (string-ref key i))))))))) ;convert character in key at index i to ASCII value
 
 ;;; Procedure:
 ;;;   expand?
@@ -169,7 +168,7 @@
 (define update
   (lambda (key val vector)
            ;finds index in hash table, stored in vector
-    (let* ([index (hash-function key 0 0 (vector-ref vector 2))]
+    (let* ([index (hash key)]
            ;list stored in hash table at index
            [lst (vector-ref (vector-ref vector 2) index)])
       (vector-set!
@@ -198,7 +197,7 @@
 (define delete
   (lambda (key val vector)
            ;finds index in hash table, stored in vector
-    (let* ([index (hash-function key 0 0 (vector-ref vector 2))]
+    (let* ([index (hash key)]
            ;list stored in hash table at index
            [lst (vector-ref (vector-ref vector 2) index)])
       (vector-set!
