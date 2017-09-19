@@ -6,35 +6,9 @@
 ;hash table (vector) contains lists
 ;lists contain pairs
 
-
-;pair = (cons key val)
-;(car pair = key)
-;(cdr pair = val)
-
-
-
-;(define search
-;  (lambda (key val vector replace?)
-;    (let* ([index (hash-function key 0 0 vector)]
-;           [lst (vector-ref(index))])
-;    (if (replace?) ;if we call update, we want to replace
-;        (vector-set! vector ;set vector[index] to new list containing replaced (key.val) pair
-;                     index
-;                     (cons (cons key val) ;create (key.val2) pair
-;                           (remove (cons key val) lst))) ;attach (key.val2) pair to list with (key.val1) removed
-;
-;        ;;;(assoc x y)
-;        (let kernel ([sub-lst lst]) ;sub recursive function
-;          (if (null? lst)
-;              null
-;              (if (equal? (car (car lst)) key) ;if str matches existing key in lst, return (key.val) pair
-;                  (car lst)
-;                  (kernel (cdr sub-lst))))) ;otherwise, keep searching
-;        ))))
-
 ;GLOBAL VALUES
-(define alpha 52) ;capital and lowercase letters
-(define percent-full .5) ;grow and rehash at 50% capacity
+;(define ALPHA 52) ;capital and lowercase letters
+;(define PERCENT-FULL .5) ;grow and rehash at 50% capacity
 
 ;PRACTICE EXAMPLE STRUCTURES
 (define ex-lst (list (cons "one" 11)
@@ -71,8 +45,7 @@
 ;;; Pre-conditions:
 ;;;   key contains characters from ASCII table (valued 0 to 127)
 (define hash
-  (let ([ALPHA 52] ;capital and lowercase letters
-        [PERCENT-FULL .5]) ;grow and rehash at 50% capacity
+  (let ([ALPHA 52]) ;capital and lowercase letters
     (lambda (key)
       (let kernel ([i 0]
                    [sum 0])
@@ -86,21 +59,22 @@
 ;;; Procedure:
 ;;;   expand?
 ;;; Parameters:
-;;;   vector, a vector containing <number of elements in hash table, size of hash
+;;;   vec, a vector containing <number of elements in hash table, size of hash 
 ;;;           table (length of vector), a vector representing a hash table>
 ;;; Purpose:
 ;;;   Determines if hash table needs to be expaned based on max capacity (e.g. 50%)
 ;;; Produces:
 ;;;   A boolean: #t if hash table needs to grow; #f if hash table is not at max capacity
 ;;; Pre-conditions:
-;;;   vector has required fields filled with valid input
+;;;   vec has required fields filled with valid input
 (define expand?
-  (lambda (vector)
-    (if (>= (exact->inexact (/ (vector-ref vector 0)
-                               (vector-ref vector 1)))
-            percent-full) ;percent-full is previously defined
-        #t
-        #f)))
+  (lambda (vec)
+    (let ([PERCENT-FULL .5]) ;grow and rehash at 50% capacity)
+      (if (>= (exact->inexact (/ (vector-ref vec 0)
+                                 (vector-ref vec 1)))
+              PERCENT-FULL) ;percent-full is previously defined
+          #t
+          #f))))
 
 ;;; Procedure:
 ;;;   remove-element
@@ -142,22 +116,22 @@
                          (remove-element key val (cdr lst) val?))))])))
 
 (define add!
-  (lambda (hash-table key value)
-    (let* ([vec (vector-ref hash-table 1)]
-           [vec_size (vector-length (vector-ref hash-table 1))]
-           [idx (modulo (hash key) vec_size)]
-           [bucket (vector-ref vec idx)])
+  (lambda (vec key val)
+    (let* ([table (vector-ref vec 2)]
+           [num-pairs (vector-ref vec 0)]
+           [index (modulo (hash key) num-pairs)]
+           [lst (vector-ref table index)])
       ; TODO: rehash if more than 50%
       ; assoc checks if key is the car of some pair in the list
-      (if (assoc key bucket)
+      (if (assoc key lst)
           (raise-arguments-error 'add!
                                  "Can not add a value if the key is already in the hash table."
                                  "key" key
-                                 "value" value)
+                                 "value" val)
           ;Add pair to front of list
-          (vector-set! vec idx (cons (cons key value) bucket)))
+          (vector-set! table index (cons (cons key val) lst)))
       ; Increment size
-      (vector-set! hash-table 0 (+ vec_size 1)))))
+      (vector-set! vec 0 (+ num-pairs 1)))))
 
 
 ;;; Procedure:
@@ -165,8 +139,8 @@
 ;;; Parameters:
 ;;;   key, a string
 ;;;   val, any type
-;;;   vector, a vector containing <number of elements in hash table, size of hash
-;;;           table (length of vector), a vector representing a hash table>
+;;;   vec, a vector containing <number of elements in hash table, size of hash 
+;;;        table (length of vector), a vector representing a hash table>
 ;;; Purpose:
 ;;;   Updates existing (key.val') pair in hash table with specified (key.val)
 ;;; Produces:
@@ -175,18 +149,21 @@
 ;;; Pre-conditions:
 ;;;   vector has required fields filled with valid input
 (define update
-  (lambda (key val vector)
+  (lambda (key val vec)
            ;finds index in hash table, stored in vector
-    (let* ([index (hash key)]
+    (let* ([index (modulo (hash key) (vector-ref vec 1))]
+           [table (vector-ref vec 2)]
            ;list stored in hash table at index
-           [lst (vector-ref (vector-ref vector 2) index)])
+           [lst (vector-ref table index)])
       (vector-set!
-       (vector-ref vector 2) ;field of vector holding hash table
+       table ;field of vector holding hash table
        index
        ;add (key.val) pair to list at index of hash table after removing the existing
        ;pair stored under key
-       (cons (cons key val)
-             (remove-element key val lst #f)))
+       (vector-set! table
+                    index
+                    (cons (cons key val)
+                          (remove-element key val lst #f))))
       vector)))
 
 ;;; Procedure:
@@ -204,41 +181,44 @@
 ;;; Pre-conditions:
 ;;;   vector has required fields filled with valid input
 (define delete
-  (lambda (key val vector)
+  (lambda (key val vec)
            ;finds index in hash table, stored in vector
-    (let* ([index (hash key)]
+    (let* ([index (modulo (hash key) (vector-ref vec 1))]
+           [table (vector-ref vector 2)]
            ;list stored in hash table at index
-           [lst (vector-ref (vector-ref vector 2) index)])
+           [lst (vector-ref table index)])
       (vector-set!
-       (vector-ref vector 2)
+       table
        index
-       (remove-element key val lst #t)))
+       (vector-set! table
+                    index
+                    (remove-element key val lst #t))))
     vector))
 
 ;;; Procedure:
 ;;;   add-to-table
 ;;; Parameters:
-;;;   str, a string
+;;;   key, a string
 ;;;   value, any type
-;;;   hash-table, a vector containing lists of (key.value) pairs
+;;;   table, a vector containing lists of (key.value) pairs
 ;;; Purpose:
 ;;;   Inserts a (key.value) pair into a hash table
 ;;; Produces:
 ;;;   A vector representing a hash table
 (define add-to-table
-  (lambda (str value hash-table)
-    (let ([index (modulo (hash str) (vector-length hash-table))])
-          (vector-set! hash-table
+  (lambda (key val table)
+    (let ([index (modulo (hash key) (vector-length table))])
+          (vector-set! table
                        index
-                       (cons (cons str value)
-                             (vector-ref hash-table index))))))
+                       (cons (cons key val)
+                             (vector-ref table index))))))
 
 ;;; Procedure:
 ;;;   find
 ;;; Parameters:
-;;;   str, a string
-;;;   hash-vec, a vector containing <number of elements in hash table, size of
-;;;             hash table (length of vector), a vector representing a hash table>
+;;;   key, a string
+;;;   vec, a vector containing <number of elements in hash table, size of
+;;;        hash table (length of vector), a vector representing a hash table>
 ;;; Purpose:
 ;;;   Finds the value associated with a given key
 ;;; Produces:
@@ -246,10 +226,10 @@
 ;;; Pre-conditions:
 ;;;   hash-vec has required fields filled with valid input
 (define find
-  (lambda (str hash-vec)
-    (let* ([table (vector-ref hash-vec 2)]
-           [index (modulo (hash str) (vector-length table))]
-           [pair (assoc str (vector-ref table index))])
+  (lambda (key vec)
+    (let* ([table (vector-ref vec 2)]
+           [index (modulo (hash key) (vector-length table))]
+           [pair (assoc key (vector-ref table index))])
       (if (equal? pair #f)
           null
           (cdr pair)))))
@@ -273,7 +253,8 @@
           (add-to-table (car (car lst))
                         (cdr (car lst))
                         table)
-          (read-list (cdr lst) table)))))
+          (read-list (cdr lst)
+                     table)))))
 
 ;;; Procedure:
 ;;;   read-table
@@ -303,8 +284,8 @@
 ;;; Procedure:
 ;;;   rehash
 ;;; Parameters:
-;;;   hash-vec, a vector containing <number of elements in hash table, size of
-;;;             hash table (length of vector), a vector representing a hash table>
+;;;   vec, a vector containing <number of elements in hash table, size of
+;;;        hash table (length of vector), a vector representing a hash table>
 ;;; Purpose:
 ;;;   Doubles size of an existing hash table and rehashes all the elements in original hash table
 ;;; Produces:
@@ -312,11 +293,11 @@
 ;;; Pre-conditions:
 ;;;   hash-vec has required fields filled with valid input
 (define rehash
-  (lambda (hash-vec)
-    (let* ([old-table (vector-ref hash-vec 2)]
-          [size (vector-ref hash-vec 1)]
+  (lambda (vec)
+    (let* ([old-table (vector-ref vec 2)]
+          [size (vector-ref vec 1)]
           [new-table (make-vector (* size 2) null)])
-      (vector-set! hash-vec
+      (vector-set! vec
                    2
                    (read-table old-table new-table 0)))))
 
