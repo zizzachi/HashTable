@@ -207,4 +207,107 @@
        (remove-element key val lst #t)))
     vector))
 
-        
+;;; Procedure:
+;;;   add-to-table
+;;; Parameters:
+;;;   str, a string
+;;;   value, any type
+;;;   hash-table, a vector containing lists of (key.value) pairs
+;;; Purpose:
+;;;   Inserts a (key.value) pair into a hash table
+;;; Produces:
+;;;   A vector representing a hash table
+(define add-to-table
+  (lambda (str value hash-table)
+    (let ([index (modulo (hash str) (vector-length hash-table))])
+          (vector-set! hash-table
+                       index
+                       (cons (cons str value)
+                             (vector-ref hash-table index))))))
+
+;;; Procedure:
+;;;   find
+;;; Parameters:
+;;;   str, a string
+;;;   hash-vec, a vector containing <number of elements in hash table, size of
+;;;             hash table (length of vector), a vector representing a hash table>
+;;; Purpose:
+;;;   Finds the value associated with a given key
+;;; Produces:
+;;;   The value associated with a given key, or null if a pair is not found
+;;; Pre-conditions:
+;;;   hash-vec has required fields filled with valid input
+(define find
+  (lambda (str hash-vec)
+    (let* ([index (modulo (hash str) (vector-length table))]
+           [table (vector-ref hash-vec 2)]
+           [pair (assoc str (vector-ref table index))])
+      (if (equal? pair #f)
+          null
+          (cdr pair)))))
+
+;;; Procedure:
+;;;   read-list
+;;; Parameters:
+;;;   lst, a list of (key.value) pairs
+;;;   table, a vector
+;;; Purpose:
+;;;   Reads through a list of (key.value) pairs and rehashes each element based on key
+;;; Produces:
+;;;   A populated hash table
+;;; Pre-conditions:
+;;;   table is an empty vector
+(define read-list
+  (lambda (lst table)
+    (if (null? lst)
+        table
+        (begin 
+          (add-to-table (car (car lst))
+                        (cdr (car lst))
+                        table)
+          (read-list (cdr lst) table)))))
+
+;;; Procedure:
+;;;   read-table
+;;; Parameters:
+;;;   old-table, a vector
+;;;   new-table, a vector
+;;;   index, an integer
+;;; Purpose:
+;;;   Reads through a vector containing lists of (key.value) pairs and rehashes each element
+;;;   within thoses lists based on keys
+;;; Produces:
+;;;   A populated hash table
+;;; Pre-conditions:
+;;;   new-table is an empty vector
+;;;   index should initally be 0
+(define read-table
+  (lambda (old-table new-table index)
+    (if (equal? index (vector-length old-table))
+        new-table
+        (begin
+          (read-list (vector-ref old-table index)
+                     new-table)
+          (read-table old-table
+                      new-table
+                      (+ 1 index))))))
+    
+;;; Procedure:
+;;;   rehash
+;;; Parameters:
+;;;   hash-vec, a vector containing <number of elements in hash table, size of
+;;;             hash table (length of vector), a vector representing a hash table>
+;;; Purpose:
+;;;   Doubles size of an existing hash table and rehashes all the elements in original hash table
+;;; Produces:
+;;;   A freshly hashed hash table
+;;; Pre-conditions:
+;;;   hash-vec has required fields filled with valid input
+(define rehash
+  (lambda (hash-vec)
+    (let ([old-table (vector-ref hash-vec 2)]
+          [size (vector-ref hash-vec 1)]
+          [new-table (make-vector (* size 2) null)])
+      (vector-set! hash-vec
+                   2
+                   (read-table old-table new-table 0)))))
