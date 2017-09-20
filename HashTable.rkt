@@ -153,10 +153,12 @@
   (lambda (ht)
     (let* ([size (vector-ref ht 1)]
            [old-table (vector-ref ht 2)]
-           [new-table (make-vector (+ (* size 2) 1) (list))])
+           [new-size (+ (* size 2) 1)]
+           [new-table (make-vector new-size (list))])
       (vector-set! ht
                    2
-                   (rehash-table! old-table new-table 0)))))
+                   (rehash-table! old-table new-table 0))
+      (vector-set! ht 1 new-size))))
 
 ;;; Procedure:
 ;;;   add!
@@ -175,12 +177,14 @@
 ;;;   add! raises an error if key is already in the hash table
 (define add!
   (lambda (ht key val)
+    ; rehash table if necessary
+    (when (expand? ht)
+      (rehash! ht))
     (let* ([table (vector-ref ht 2)]
            [table-size (vector-ref ht 1)]
            [num-pairs (vector-ref ht 0)]
            [index (modulo (hash key) table-size)]
            [lst (vector-ref table index)])
-      ; TODO: rehash if more than 50%
       ; assoc checks if key is the car of some pair in the list
       (if (assoc key lst)
           (raise-arguments-error 'add!
@@ -221,7 +225,7 @@
                                   "value" val)]
           [(if val?
                ;if we care about val, make sure both key and val match
-               (if (and (equal? (car (car lst)) key) (= (cdr (car lst)) val))
+               (if (and (equal? (car (car lst)) key) (equal? (cdr (car lst)) val))
                    ;if they match, return remainder of list
                    (cdr lst)
                    ;build a list of non-matching elements
@@ -281,14 +285,17 @@
 (define delete!
   (lambda (ht key val)
     ;finds index in hash table, stored in vector
-    (let* ([index (modulo (hash key) (vector-ref ht 1))]
+    (let* ([num-pairs (vector-ref ht 0)]
+           [index (modulo (hash key) (vector-ref ht 1))]
            [table (vector-ref ht 2)]
            ;list stored in hash table at index
            [lst (vector-ref table index)])
-      ; TODO decrement num pairs
+      ; Remove element
       (vector-set! table
                    index
-                   (remove-element key val lst #t)))))
+                   (remove-element key val lst #t))
+    ; Decrement number of pairs
+    (vector-set! ht 0 (- num-pairs 1)))))
 
 ;;; Procedure:
 ;;;   find

@@ -8,7 +8,6 @@
 ; Import our HashTable script
 (require "HashTable.rkt")
 
-
 (define tests-hash
   (test-suite
    "Tests of hash"
@@ -33,9 +32,19 @@
    (test-case
     "Can add multiple distinct keys"
     (let ([ht (hash-table-new)])
-      (add! ht "the answer" 42)
       (add! ht "pair" (cons 'a 'b))
-      (add! ht "meta" (hash-table-new))))
+      (add! ht 
+      "
+  __
+// o\\
+\\_ //
+  <||
+  <||
+  <||"
+      'literal)
+      (add! ht "meta" (hash-table-new))
+      ; Check number of pairs has increased
+      (check-equal? (vector-ref ht 0) 3)))
    (test-case
     "Cannot add an exisiting element"
     (let ([ht (hash-table-new)])
@@ -45,20 +54,89 @@
     "Add enough elements to rehash the table"
     (let* ([ht (hash-table-new)]
            [vec-size (vector-ref ht 1)]
-           [rehash-size (* PERCENT-FULL vec-size)])
+           [rehash-size (+ (* PERCENT-FULL vec-size) 1)])
       (let kernel ([index 0])
         (unless (> index rehash-size)
-            (add! ht (number->string index) index))
-        (kernel (+ index 1)))
-      ; GET FROM HASH TABLE
-      (check-equal? (number->string rehash-size) rehash-size)))
-   ))
+          (add! ht (number->string index) index)
+          (kernel (+ index 1))))
+      ; Check the table has grown
+      (check-true (> (vector-ref ht 1) vec-size))
+      ;Check that every element is in the table
+      (let kernel ([index 0])
+        (unless (> index rehash-size)
+          (check-equal? index
+                        (find ht (number->string index)))
+          (kernel (+ index 1))))))))
 
+(define tests-update!
+  (test-suite
+   "Tests of update!"
+   (test-case
+    "Can update an exisitng key"
+    (let ([ht (hash-table-new)])
+      (add! ht "the key" 1729)
+      (update! ht "the key" "the value (we're very creative, Sam.)")
+      (check-equal? "the value (we're very creative, Sam.)"
+                    (find ht "the key"))))
+   (test-case
+    "Cannot update a non exisiting key"
+    (let ([ht (hash-table-new)])
+      (check-exn exn:fail? (lambda () (update! ht "a" 'a)))))))
+
+(define tests-find
+  (test-suite
+   "Tests of find"
+   (test-case
+    "Finds the correct element"
+    (let ([ht (hash-table-new)])
+      (add! ht "key" 1)
+      (add! ht "eyk" 2)
+      (add! ht "yke" 3)
+      (check-equal? 1 (find ht "key"))
+      (check-equal? 2 (find ht "eyk"))
+      (check-equal? 3 (find ht "yke"))))
+   (test-case
+    "Cannot find a non-existing key"
+    (let ([ht (hash-table-new)])
+      (check-false (find ht "KEY"))))))
+
+(define tests-delete!
+  (test-suite
+   "Tests of delete!"
+   (test-case
+    "Can delete an exisitng key"
+    (let ([ht (hash-table-new)])
+      (add! ht "do re mi" "abc")
+      (add! ht "fa sol la" "cba")
+      (delete! ht "do re mi" "abc")
+      (check-false (find ht "do re mi"))
+      ; Check number of pairs has decreased
+      (check-equal? (vector-ref ht 0) 1)))
+   (test-case
+    "Cannot delete a non exisiting key"
+    (let ([ht (hash-table-new)])
+      (check-exn exn:fail? (lambda () (delete! ht "a" 'val)))))))
+
+(define tests-all
+  (test-suite
+   "Tests the interactions between add!, update!, find, and delete!"
+   (test-case
+    "Can add, modify, read and delete the same key"
+    (let ([ht (hash-table-new)])
+      (add! ht "key" 'val)
+      (add! ht "llave" "ya ve")
+      (update! ht "llave" "ya ve")
+      (check-equal? (find ht "llave") "ya ve")
+      (delete! ht "llave" "ya ve")
+      (check-false (find "llave"))))
+   (test-case
+    "Cannot delete a non exisiting key"
+    (let ([ht (hash-table-new)])
+      (check-exn exn:fail? (lambda () (delete! ht "a" 'val)))))))
 
 ; Run tests
 (run-tests tests-hash)
 (run-tests tests-add!)
-
-; QUESTIONS FOR SAM
-; For testing add!, update!, etc. do we just want to test each function independently, or do we want to do integration tests with multiple functions
-;   Also, should each test case have its own hash, or can we make one that is used by several test-cases
+(run-tests tests-update!)
+(run-tests tests-find)
+(run-tests tests-delete!)
