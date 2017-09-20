@@ -1,9 +1,8 @@
+; By: Shida Jing, Chiara Zizza, and David Neill Asanza
 #lang racket/base
 
 (require rackunit)
 (require rackunit/text-ui)
-;(require test-engine/racket-tests)
-
 
 ; Import our HashTable script
 (require "HashTable.rkt")

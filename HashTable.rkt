@@ -1,10 +1,5 @@
+; By: Shida Jing, Chiara Zizza, and David Neill Asanza
 #lang racket
-
-;vector ((key.val) par #, (vector-length hash-table), hash-table)
-
-;overarching vector contains size of hash table (length of vector), number of elements in hash table, hash table stored in a vector
-;hash table (vector) contains lists
-;lists contain pairs
 
 ;GLOBAL Constants
 (define ALPHA 128) ;capital and lowercase letters
