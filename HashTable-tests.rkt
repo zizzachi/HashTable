@@ -35,14 +35,14 @@
     (let ([ht (hash-table-new)])
       (add! ht "pair" (cons 'a 'b))
       (add! ht
-      "
+            "
   __
 // o\\
 \\_ //
   <||
   <||
   <||"
-      'literal)
+            'literal)
       (add! ht "meta" (hash-table-new))
       ; Check number of pairs has increased
       (check-equal? (vector-ref ht 0) 3)))
@@ -125,15 +125,11 @@
     "Can add, modify, read and delete the same key"
     (let ([ht (hash-table-new)])
       (add! ht "key" 'val)
-      (add! ht "llave" "ya ve")
+      (add! ht "llave" "valle")
       (update! ht "llave" "ya ve")
       (check-equal? (find ht "llave") "ya ve")
       (delete! ht "llave" "ya ve")
-      (check-false (find "llave"))))
-   (test-case
-    "Cannot delete a non exisiting key"
-    (let ([ht (hash-table-new)])
-      (check-exn exn:fail? (lambda () (delete! ht "a" 'val)))))))
+      (check-false (find ht "llave"))))))
 
 ; Run tests
 (run-tests tests-hash)
@@ -141,3 +137,4 @@
 (run-tests tests-update!)
 (run-tests tests-find)
 (run-tests tests-delete!)
+(run-tests tests-all)

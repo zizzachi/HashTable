@@ -4,7 +4,7 @@
 ; Fall 2017
 
 ;GLOBAL Constants
-(define ALPHA 128) ;capital and lowercase letters
+(define ALPHA 128) ;number of ASCII symbols
 (define PERCENT-FULL .5) ;grow and rehash at 50% capacity
 
 ;;; Procedure:
@@ -19,15 +19,17 @@
 ;;;   key contains characters from the ASCII table (valued 0 to 127)
 ;;;   ALPHA is defined
 (define hash
-    (lambda (key)
-      (let kernel ([i 0]
-                   [sum 0])
-        (if (= i (string-length key))
-            sum ;make sure index returned is within bounds of vector
-            (kernel (+ i 1) ;increment character being examined in key
-                    (+ sum (* (expt ALPHA
-                                    (- (string-length key) (+ i 1)))
-                              (char->integer (string-ref key i))))))))) ;convert character in key at index i to ASCII value
+  (lambda (key)
+    (let kernel ([i 0]
+                 [sum 0])
+      (if (= i (string-length key))
+          sum ;make sure index returned is within bounds of vector
+          (kernel (+ i 1) ;increment character being examined in key
+                  (+ sum (* (expt ALPHA
+                                  (- (string-length key)
+                                     (+ i 1)))
+                            ;convert character in key at index i to ASCII value
+                            (char->integer (string-ref key i)))))))))
 
 ;;; Procedure:
 ;;;   hash-table-new
@@ -55,11 +57,11 @@
 ;;;   PERCENT-FULL is defined
 (define expand?
   (lambda (ht) ;grow and rehash at 50% capacity)
-      (if (>= (exact->inexact (/ (vector-ref ht 0)
-                                 (vector-ref ht 1)))
-              PERCENT-FULL)
-          #t
-          #f)))
+    (if (>= (exact->inexact (/ (vector-ref ht 0)
+                               (vector-ref ht 1)))
+            PERCENT-FULL)
+        #t
+        #f)))
 
 ;;; Procedure:
 ;;;   add-to-table!
@@ -77,7 +79,8 @@
 ;;;   table has been mutated
 (define add-to-table!
   (lambda (key val table)
-    (let ([index (modulo (hash key) (vector-length table))])
+    (let ([index (modulo (hash key)
+                         (vector-length table))])
       (vector-set! table
                    index
                    (cons (cons key val)
@@ -115,8 +118,8 @@
 ;;;   new-table, a vector
 ;;;   index, an integer
 ;;; Purpose:
-;;;   Reads through a vector containing lists of (key.value) pairs and rehashes each element
-;;;     within those lists based on their keys, placing them into a new vector
+;;;   Reads through a vector containing lists of (key.value) pairs and rehashes each 
+;;;     element within those lists based on their keys, placing them into a new vector
 ;;; Produces:
 ;;;   A populated hash table
 ;;; Pre-conditions:
@@ -222,7 +225,8 @@
                                   "value" val)]
           [(if val?
                ;if we care about val, make sure both key and val match
-               (if (and (equal? (car (car lst)) key) (equal? (cdr (car lst)) val))
+               (if (and (equal? (car (car lst)) key)
+                        (equal? (cdr (car lst)) val))
                    ;if they match, return remainder of list
                    (cdr lst)
                    ;build a list of non-matching elements
@@ -230,7 +234,8 @@
                          (remove-element key val (cdr lst) val?)))
 
                ;if we don't care about val, only make sure val matches
-               (if (equal? (car (car lst)) key)
+               (if (equal? (car (car lst))
+                           key)
                    ;if it matches, return remainder of list
                    (cdr lst)
                    ;build a list of non-matching elements
@@ -255,7 +260,8 @@
 (define update!
   (lambda (ht key val)
     ;finds index in hash table, stored in vector
-    (let* ([index (modulo (hash key) (vector-ref ht 1))]
+    (let* ([index (modulo (hash key)
+                          (vector-ref ht 1))]
            [table (vector-ref ht 2)]
            ;list stored in hash table at index
            [lst (vector-ref table index)])
@@ -275,8 +281,8 @@
 ;;; Purpose:
 ;;;   Removes (key.val) pair in hash table or returns error if (key.val) pair is not found
 ;;; Produces:
-;;;   A vector with the specified (key.val) removed from hash table or an error if (key.val) pair
-;;;   does not exist in hash table
+;;;   A vector with the specified (key.val) removed from hash table or an error 
+;;;     if (key.val) pair does not exist in hash table
 ;;; Pre-conditions:
 ;;;   vector has required fields filled with valid input
 (define delete!
@@ -291,8 +297,8 @@
       (vector-set! table
                    index
                    (remove-element key val lst #t))
-    ; Decrement number of pairs
-    (vector-set! ht 0 (- num-pairs 1)))))
+      ; Decrement number of pairs
+      (vector-set! ht 0 (- num-pairs 1)))))
 
 ;;; Procedure:
 ;;;   find
@@ -308,7 +314,8 @@
 (define find
   (lambda (ht key)
     (let* ([table (vector-ref ht 2)]
-           [index (modulo (hash key) (vector-length table))]
+           [index (modulo (hash key)
+                          (vector-length table))]
            [pair (assoc key (vector-ref table index))])
       (if pair
           (cdr pair)
