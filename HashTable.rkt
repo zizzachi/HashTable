@@ -1,5 +1,7 @@
-; By: Shida Jing, Chiara Zizza, and David Neill Asanza
 #lang racket
+; CSC 301: Assignment 4
+; By: Shida Jing, Chiara Zizza, and David Neill Asanza
+; Fall 2017
 
 ;GLOBAL Constants
 (define ALPHA 128) ;capital and lowercase letters

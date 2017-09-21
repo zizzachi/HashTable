@@ -1,5 +1,7 @@
-; By: Shida Jing, Chiara Zizza, and David Neill Asanza
 #lang racket/base
+; CSC 301: Assignment 4
+; By: Shida Jing, Chiara Zizza, and David Neill Asanza
+; Fall 2017
 
 (require rackunit)
 (require rackunit/text-ui)
@@ -32,7 +34,7 @@
     "Can add multiple distinct keys"
     (let ([ht (hash-table-new)])
       (add! ht "pair" (cons 'a 'b))
-      (add! ht 
+      (add! ht
       "
   __
 // o\\
